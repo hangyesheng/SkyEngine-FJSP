@@ -1,0 +1,44 @@
+# =============================================================================
+# FJSP — .gitignore
+# =============================================================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- IDE / 编辑器 ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---- Claude Code ----
+.claude/
+
+# ---- 系统文件 ----
+.DS_Store
+Thumbs.db
+
+# ---- 本地配置 / 密钥 ----
+.env
+.env.local
+
+# ---- 测试 / 缓存 ----
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/

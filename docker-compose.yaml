@@ -1,0 +1,103 @@
+# ============================================================================
+# FJSP — 柔性作业车间调度算法打包
+#
+# 构建全部：  ./build.sh
+# 构建单个：  ./build.sh de
+# 推送到引擎：构建后镜像可直接在 SkyEngine/docker-compose.yaml 中引用
+#
+# 镜像命名规范：skyengine-fjsp-<算法名>
+# 新增算法：
+#   1. 在算法目录内编写 Dockerfile，FROM skyengine-fjsp-base:latest
+#   2. 在本文件中添加对应 service，加
+# ============================================================================
+
+x-gpu: &gpu
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+
+  # --------------------------------------------------------------------------
+  # Base 基础镜像（numpy + flask）
+  # 其他所有算法镜像的 FROM 依赖，必须最先构建
+  # --------------------------------------------------------------------------
+  base:
+    build:
+      context: .
+      dockerfile: dockerfiles/fjsp.dockerfile
+      network: host
+    image: skyengine-fjsp-base:latest
+
+  # --------------------------------------------------------------------------
+  # DE 差分进化求解器
+  # 测试：docker compose run --rm -p 8002:8002 de
+  # --------------------------------------------------------------------------
+  de:
+    build:
+      context: .
+      dockerfile: dockerfiles/de.dockerfile
+      network: host
+    image: skyengine-fjsp-de:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # --------------------------------------------------------------------------
+  # PSO 粒子群优化求解器
+  # 测试：docker compose run --rm -p 8002:8002 pso
+  # --------------------------------------------------------------------------
+  pso:
+    build:
+      context: .
+      dockerfile: dockerfiles/pso.dockerfile
+      network: host
+    image: skyengine-fjsp-pso:latest
+
+  # --------------------------------------------------------------------------
+  # Best CP-SAT 精确求解器 (OR-Tools)
+  # 测试：docker compose run --rm -p 8002:8002 best
+  # --------------------------------------------------------------------------
+  best:
+    build:
+      context: .
+      dockerfile: dockerfiles/best.dockerfile
+      network: host
+    image: skyengine-fjsp-best:latest
+
+  # --------------------------------------------------------------------------
+  # DRL 深度强化学习求解器（需要 GPU）
+  # 测试：docker compose run --rm -p 8002:8002 drl
+  # --------------------------------------------------------------------------
+  drl:
+    <<: *gpu
+    build:
+      context: .
+      dockerfile: dockerfiles/drl.dockerfile
+      network: host
+    image: skyengine-fjsp-drl:latest
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+      - PYTHONUNBUFFERED=1
+
+  # --------------------------------------------------------------------------
+  # Test 测试镜像（需要先启动某个 solver 服务）
+  # 用法：docker compose run --rm test <solver> [dataset]
+  #   例如：docker compose run --rm test de J10P5M6
+  #   也可以同时起服务：docker compose up drl && docker compose run --rm test drl J10P5M6
+  # --------------------------------------------------------------------------
+  test:
+    build:
+      context: .
+      dockerfile: dockerfiles/test.dockerfile
+      network: host
+    image: skyengine-fjsp-test:latest
+    depends_on: [drl]
+    environment:
+      - DE_URL=${DE_URL:-http://de:8002}
+      - PSO_URL=${PSO_URL:-http://pso:8002}
+      - BEST_URL=${BEST_URL:-http://best:8002}
+      - DRL_URL=${DRL_URL:-http://drl:8002}
