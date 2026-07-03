@@ -84,6 +84,19 @@ services:
       - PYTHONUNBUFFERED=1
 
   # --------------------------------------------------------------------------
+  # GraphGRPO 深度强化学习求解器（GNN + GRPO，纯 CPU，模型已随仓库提供）
+  # 测试：docker compose run --rm -p 8002:8002 graphgrpo
+  # --------------------------------------------------------------------------
+  graphgrpo:
+    build:
+      context: .
+      dockerfile: dockerfiles/graphgrpo.dockerfile
+      network: host
+    image: skyengine-fjsp-graphgrpo:latest
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # --------------------------------------------------------------------------
   # Test 测试镜像（需要先启动某个 solver 服务）
   # 用法：docker compose run --rm test <solver> [dataset]
   #   例如：docker compose run --rm test de J10P5M6
@@ -101,3 +114,4 @@ services:
       - PSO_URL=${PSO_URL:-http://pso:8002}
       - BEST_URL=${BEST_URL:-http://best:8002}
       - DRL_URL=${DRL_URL:-http://drl:8002}
+      - GRAPHGRPO_URL=${GRAPHGRPO_URL:-http://graphgrpo:8002}

@@ -10,6 +10,7 @@
 | DE | `skyengine-fjsp-de` | 元启发式 | 否 | 差分进化 |
 | PSO | `skyengine-fjsp-pso` | 元启发式 | 否 | 粒子群优化 |
 | DRL (Multi-PPO) | `skyengine-fjsp-drl` | 深度强化学习 | **是** | 两阶段 GNN+PPO |
+| GraphGRPO | `skyengine-fjsp-graphgrpo` | 深度强化学习 | 否 | GNN + GRPO（无 critic），权重随仓库提供 |
 
 ## 项目结构
 
@@ -32,6 +33,7 @@ FJSP/
 │   └── PSO_solver/
 ├── OR-solver/                    # CP-SAT 源码
 ├── End-to-end-DRL-for-FJSP-main/ # DRL 源码
+├── GraphGRPO/                    # GraphGRPO 源码 + 预训练权重 (agent_model.pt)
 └── readme.md
 ```
 
@@ -202,6 +204,25 @@ FJSP/
 
 自动匹配 `FJSP_MultiPPO/saved_network/` 下的预训练模型，按问题规模 (n_jobs, n_machines) 选择最接近的模型。
 
+### GraphGRPO（GNN + GRPO）
+
+```json
+{
+  "config": {
+    "device": "cpu",
+    "seed": 42,
+    "n_agvs": null,
+    "spread_machines": true
+  }
+}
+```
+
+加载 `GraphGRPO/models/agent_model.pt`（GNN 编码器 + 排序/路由/AGV 三个 Actor，纯 CPU 推理）。
+内部以事件驱动仿真驱动 agent 逐步决策，产出完整调度后按时间步释放。
+
+- `n_agvs`：仿真中的 AGV 数量，`null` 表示等于机器数（充足，运输不阻塞调度）
+- `spread_machines`：当所有机器位置为 `[0,0]` 时自动网格化布置，避免 GNN 位置/运输特征退化
+
 ## Docker 使用
 
 ### 构建
@@ -215,6 +236,7 @@ docker compose build
 # 构建单个
 docker compose build de
 docker compose build drl
+docker compose build graphgrpo
 ```
 
 ### 单独测试某个算法

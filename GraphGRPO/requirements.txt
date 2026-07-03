@@ -1,0 +1,7 @@
+# GraphGRPO solver dependencies (CPU-only).
+# Install order matters: install torch first, then torch_geometric so PyG
+# picks up the matching torch ABI.
+torch>=2.0
+torch_geometric>=2.3
+numpy>=1.21
+flask>=2.0

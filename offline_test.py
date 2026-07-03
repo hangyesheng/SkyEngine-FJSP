@@ -59,6 +59,10 @@ SERVICES = {
         "url": os.environ.get("DRL_URL", "http://localhost:8002"),
         "name": "DRL",
     },
+    "graphgrpo": {
+        "url": os.environ.get("GRAPHGRPO_URL", "http://localhost:8002"),
+        "name": "GraphGRPO",
+    },
 }
 
 # 每种服务对应的默认 solver config
@@ -87,6 +91,13 @@ DEFAULT_CONFIGS = {
     "drl": {
         "device": "cuda",
         "seed": 42,
+    },
+    "graphgrpo": {
+        "device": "cpu",
+        "seed": 42,
+        "n_agvs": None,             # None → n_machines (abundant, non-blocking)
+        "spread_machines": True,     # auto-grid machine positions when obs locs are [0,0]
+        "consider_transport": False, # False → pure-processing makespan (matches siblings)
     },
 }
 
